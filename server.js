@@ -2,12 +2,12 @@ const express = require("express");
 const app = express();
 const db = require('./db');
 require('dotenv').config()
-const {passport} = require('./auth.js')
+const { passport } = require('./auth.js')
 // Configuring body-parser
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 const Person = require("./models/Person.js");
-const { jwtAuthMiddleware, generateToken} = require('./jwt.js');
+const { jwtAuthMiddleware, generateToken } = require('./jwt.js');
 
 // Middleware Function: 
 const logRequest = (req, res, next) => {
@@ -28,7 +28,7 @@ app.use(logRequest);    // Using logRequest middleware
 
 
 app.use(passport.initialize());
-const localAuthMiddleware = passport.authenticate('local', { session: false})
+const localAuthMiddleware = passport.authenticate('local', { session: false })
 
 app.get("/", (req, res) => {
     res.send(" Welcome to my hotel! ")
@@ -41,15 +41,15 @@ app.post("/register", async (req, res) => {
         const savedData = await newPerson.save();
         // const result = savedData.toObject();
         // delete result.password;
-        const {password, ...result} = savedData.toObject();
+        const { password, ...result } = savedData.toObject();
 
         console.log("data saved");
         const payload = {
-            id: result.id,
-            unername: result.username
+            id: result._id,
+            username: result.username
         }
         const token = generateToken(payload);
-        res.status(200).json({user: result, token: token});
+        res.status(200).json({ user: result, token: token });
     } catch (error) {
         console.log(error);
         res.status(500).send(error)
@@ -58,15 +58,17 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     try {
-        const {username, password} = req.body;
-        const user = await Person.findOne({username: username});
-        if(!user || !await user.comparePassword(password)) res.status(404).send("Incorret Username or Password!");
-        const payload = {
-            id: user.id,
-            unername: user.username
+        const { username, password } = req.body;
+        const user = await Person.findOne({ username: username });
+        if (!user || !await user.comparePassword(password)) res.status(404).send("Incorret Username or Password!");
+        else {
+            const payload = {
+                id: user.id,
+                username: user.username
+            }
+            const token = generateToken(payload);
+            res.status(200).json(token);
         }
-        const token = generateToken(payload);
-        res.status(200).json(token);
     } catch (error) {
         console.log(error);
         res.status(500).send(error);

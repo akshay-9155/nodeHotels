@@ -12,7 +12,8 @@ require('dotenv').config();
 //     useUnifiedTopology: true
 // });
 
-mongoose.connect(process.env.MONGO_URL);
+// mongoose.connect(process.env.MONGO_URL);    // local environment
+mongoose.connect(process.env.MONGO_ATLAS_URL);    // mongodb Atlas
 
 const db = mongoose.connection;
 
